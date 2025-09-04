@@ -139,13 +139,13 @@ echo "Gas Price (wei): $GAS_PRICE"
 echo "Priority Gas Price (wei): $PRIORITY_GAS_PRICE"
 echo "Chain ID: $CHAIN_ID"
 echo "RPC URL: $RPC_URL"
-echo "SALT_TRANSFER_VALIDATOR: $SALT_TRANSFER_VALIDATOR"
-echo "EXPECTED_VALIDATOR_ADDRESS: $EXPECTED_VALIDATOR_ADDRESS"
+echo "SALT_TRANSFER_VALIDATOR: $SALT_TRANSFER_VALIDATOR_41"
+echo "EXPECTED_VALIDATOR_ADDRESS: $EXPECTED_VALIDATOR_41_ADDRESS"
 echo "DEFAULT_OWNER_ADDRESS: $DEFAULT_OWNER_ADDRESS"
 echo "EXPECTED_EOA_REGISTRY_ADDRESS: $EXPECTED_EOA_REGISTRY_ADDRESS"
 echo "EXPECTED_VALIDATOR_CONFIGURATION_ADDRESS: $EXPECTED_VALIDATOR_CONFIGURATION_ADDRESS"
-echo "VALIDATOR_NAME: $VALIDATOR_NAME"
-echo "VALIDATOR_VERSION: $VALIDATOR_VERSION"
+echo "VALIDATOR_NAME: $VALIDATOR_41_NAME"
+echo "VALIDATOR_VERSION: $VALIDATOR_41_VERSION"
 read -p "Do you want to proceed? (yes/no) " yn
 
 case $yn in
@@ -161,6 +161,6 @@ forge script script/common/DeployValidator41.s.sol:DeployValidator41 \
   --priority-gas-price $PRIORITY_GAS_PRICE \
   --rpc-url $RPC_URL \
   --broadcast \
-  --optimizer-runs 50 \
+  --optimizer-runs 2000 \
   --verifier blockscout --verifier-url https://blessnet.calderaexplorer.xyz/api \
-  --verify $RESUME --via-ir
+  --verify $RESUME

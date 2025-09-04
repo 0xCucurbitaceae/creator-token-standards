@@ -15,7 +15,7 @@ contract DeployValidator is Script {
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         address defaultOwner = vm.envAddress("DEFAULT_OWNER_ADDRESS");
-        
+
         vm.startBroadcast(deployerPrivateKey);
         address validator = address(new CreatorTokenTransferValidator{salt: saltValue}(defaultOwner, eoaRegistry, validatorName, validatorVersion, validatorConfiguration));
         vm.stopBroadcast();

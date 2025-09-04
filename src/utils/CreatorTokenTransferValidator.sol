@@ -255,6 +255,9 @@ contract CreatorTokenTransferValidator is IEOARegistry, ITransferValidator, ERC1
     /// @dev Mapping of list ids to whitelist settings
     mapping (uint120 => List) internal whitelists;
 
+    /// @dev Mapping of list ids to recipient allowlists.
+    mapping(uint120 => List) internal recipientAllowlists;
+
     /// @dev Mapping of list ids to authorizers
     mapping (uint120 => List) internal authorizers;
 
@@ -989,6 +992,24 @@ contract CreatorTokenTransferValidator is IEOARegistry, ITransferValidator, ERC1
     }
 
     /**
+     * @notice Adds one or more accounts to a recipientAllowlist.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     * @dev Throws when the accounts array is empty.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. Accounts not previously in the list are added.
+     *      2. An `AddedAccountToList` event is emitted for each account that is newly added to the list.
+     *
+     * @param id       The id of the list.
+     * @param accounts The addresses of the accounts to add.
+     */
+    function addAccountsToRecipientAllowlist(uint120 id, address[] calldata accounts) external {
+        _addAccountsToList(recipientAllowlists[id], LIST_TYPE_RECIPIENTS, id, accounts);
+    }
+
+
+    /**
      * @notice Adds one or more accounts to authorizers.
      *
      * @dev Throws when the caller does not own the specified list.
@@ -1088,6 +1109,26 @@ contract CreatorTokenTransferValidator is IEOARegistry, ITransferValidator, ERC1
         address[] calldata accounts
     ) external {
         _removeAccountsFromList(whitelists[id], LIST_TYPE_WHITELIST, id, accounts);
+    }
+
+    /**
+     * @notice Removes one or more accounts from a whitelist.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     * @dev Throws when the accounts array is empty.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. Accounts previously in the list are removed.
+     *      2. A `RemovedAccountFromList` event is emitted for each account that is removed from the list.
+     *
+     * @param id       The id of the list.
+     * @param accounts The addresses of the accounts to remove.
+     */
+    function removeAccountsToRecipientAllowlist(
+        uint120 id,
+        address[] calldata accounts
+    ) external {
+        _removeAccountsFromList(recipientAllowlists[id], LIST_TYPE_RECIPIENTS, id, accounts);
     }
 
     /**
@@ -1777,6 +1818,12 @@ contract CreatorTokenTransferValidator is IEOARegistry, ITransferValidator, ERC1
 
         if (callerConstraints == CALLER_CONSTRAINTS_SBT) {
             return (CreatorTokenTransferValidator__TokenIsSoulbound.selector, DEFAULT_TOKEN_TYPE);
+        }
+
+        List storage recipientAllowlist = recipientAllowlists[listId];
+
+        if (recipientAllowlist.nonEnumerableAccounts[to]) {
+            return (SELECTOR_NO_ERROR, DEFAULT_TOKEN_TYPE);
         }
 
         List storage whitelist = whitelists[listId];
