@@ -6,9 +6,9 @@ import "./CreatorTokenTransferValidator.sol";
 uint8 constant LIST_TYPE_TARGET_WHITELIST = 3;
 
 /**
- * @title  LoomValidator
+ * @title  CreatorTokenTransferValidatorV41
  * @author Abraxas
- * @notice The LoomValidator contract extends CreatorTokenTransferValidator to provide an additional
+ * @notice The CreatorTokenTransferValidatorV41 contract extends CreatorTokenTransferValidator to provide an additional
  *         "to whitelist" feature that allows certain addresses to bypass transfer validation entirely.
  *         This is useful for scenarios where specific addresses (like protocol contracts or bridges)
  *         should be able to receive tokens without any transfer restrictions.
@@ -33,7 +33,7 @@ uint8 constant LIST_TYPE_TARGET_WHITELIST = 3;
  *         - Emergency rescue contracts for token recovery
  */
 
-contract LoomValidator is CreatorTokenTransferValidator {
+contract CreatorTokenTransferValidatorV41 is CreatorTokenTransferValidator {
     using EnumerableSet for EnumerableSet.AddressSet;
     uint16 private constant DEFAULT_TOKEN_TYPE = 0;
 
@@ -91,26 +91,24 @@ contract LoomValidator is CreatorTokenTransferValidator {
         _removeAccountsFromList(recipientAllowlist[id], LIST_TYPE_TARGET_WHITELIST, id, accounts);
     }
 
-    // TODO: understand why this gets too big to deploy on hardhat 🤯
+    /**
+     * @notice Get whitelisted accounts by list id.
+     * @param  id The id of the list.
+     * @return An array of whitelisted accounts.
+     */
+    function getRecipientAllowlistedAccounts(uint120 id) public view returns (address[] memory) {
+        return recipientAllowlist[id].enumerableAccounts.values();
+    }
 
-    // /**
-    //  * @notice Get whitelisted accounts by list id.
-    //  * @param  id The id of the list.
-    //  * @return An array of whitelisted accounts.
-    //  */
-    // function getRecipientAllowlistedAccounts(uint120 id) public view returns (address[] memory) {
-    //     return recipientAllowlist[id].enumerableAccounts.values();
-    // }
-
-    // /**
-    //  * @notice Check if an account is whitelisted in a specified list.
-    //  * @param id       The id of the list.
-    //  * @param account  The address of the account to check.
-    //  * @return         True if the account is whitelisted in the specified list, false otherwise.
-    //  */
-    // function isAccountRecipientAllowlisted(uint120 id, address account) public view returns (bool) {
-    //     return recipientAllowlist[id].nonEnumerableAccounts[account];
-    // }
+    /**
+     * @notice Check if an account is whitelisted in a specified list.
+     * @param id       The id of the list.
+     * @param account  The address of the account to check.
+     * @return         True if the account is whitelisted in the specified list, false otherwise.
+     */
+    function isAccountRecipientAllowlisted(uint120 id, address account) public view returns (bool) {
+        return recipientAllowlist[id].nonEnumerableAccounts[account];
+    }
 
     /*************************************************************************/
     /*                       OVERRIDDEN VALIDATION LOGIC                     */

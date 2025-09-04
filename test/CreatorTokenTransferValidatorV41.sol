@@ -2,24 +2,24 @@
 pragma solidity ^0.8.24;
 
 import "./TransferValidatorERC1155.t.sol";
-import {LoomValidator, LIST_TYPE_TARGET_WHITELIST} from "../src/utils/LoomValidator.sol";
+import {CreatorTokenTransferValidatorV41, LIST_TYPE_TARGET_WHITELIST} from "../src/utils/CreatorTokenTransferValidatorV41.sol";
 
-contract LoomValidatorTest is TransferValidatorTestERC1155 {
-    LoomValidator public loomValidator;
+contract CreatorTokenTransferValidatorV41Test is TransferValidatorTestERC1155 {
+    CreatorTokenTransferValidatorV41 public CreatorTokenTransferValidatorV41;
 
     function setUp() public virtual override {
         super.setUp();
 
-        // Deploy LoomValidator instead of the regular CreatorTokenTransferValidator
-        loomValidator = new LoomValidator(
+        // Deploy CreatorTokenTransferValidatorV41 instead of the regular CreatorTokenTransferValidator
+        CreatorTokenTransferValidatorV41 = new CreatorTokenTransferValidatorV41(
             address(this),
             address(eoaRegistry),
-            "LoomValidator",
+            "CreatorTokenTransferValidatorV41",
             "1.0.0",
             address(validatorConfiguration)
         );
 
-        validator = loomValidator;
+        validator = CreatorTokenTransferValidatorV41;
     }
 
     /*************************************************************************/
@@ -32,7 +32,7 @@ contract LoomValidatorTest is TransferValidatorTestERC1155 {
         vm.prank(listOwner);
         uint120 listId = validator.createList("test");
 
-        LoomValidator loomValidator = LoomValidator(address(validator));
+        CreatorTokenTransferValidatorV41 CreatorTokenTransferValidatorV41 = CreatorTokenTransferValidatorV41(address(validator));
 
         uint256 expectedNumAccountsWhitelisted = 0;
         address[] memory accountsToWhitelist = new address[](numAccountsToWhitelist);
@@ -55,17 +55,17 @@ contract LoomValidatorTest is TransferValidatorTestERC1155 {
         }
 
         vm.prank(listOwner);
-        loomValidator.addAccountsToRecipientAllowlist(listId, accountsToWhitelist);
+        CreatorTokenTransferValidatorV41.addAccountsToRecipientAllowlist(listId, accountsToWhitelist);
 
         for (uint256 i = 0; i < numAccountsToWhitelist; i++) {
-        //   assertTrue(loomValidator.isAccountRecipientAllowlisted(listId, accountsToWhitelist[i]));
+        //   assertTrue(CreatorTokenTransferValidatorV41.isAccountRecipientAllowlisted(listId, accountsToWhitelist[i]));
         }
 
-        // address[] memory whitelistedAccounts = loomValidator.getRecipientAllowlistedAccounts(listId);
+        // address[] memory whitelistedAccounts = CreatorTokenTransferValidatorV41.getRecipientAllowlistedAccounts(listId);
         // assertEq(whitelistedAccounts.length, expectedNumAccountsWhitelisted);
 
         for(uint256 i = 0; i < expectedNumAccountsWhitelisted; i++) {
-        //   assertTrue(loomValidator.isAccountRecipientAllowlisted(listId, accountsToWhitelist[i]));
+        //   assertTrue(CreatorTokenTransferValidatorV41.isAccountRecipientAllowlisted(listId, accountsToWhitelist[i]));
         }
     }
 
