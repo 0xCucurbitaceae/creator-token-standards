@@ -2,7 +2,7 @@
 
 if [ -f .env.secrets ]
 then
-  export $(cat .env.secrets | xargs) 
+  export $(cat .env.secrets | xargs)
 else
     echo "Please set your .env.secrets file"
     exit 1
@@ -10,7 +10,7 @@ fi
 
 if [ -f .env.common ]
 then
-  export $(cat .env.common | xargs) 
+  export $(cat .env.common | xargs)
 else
     echo "Please set your .env.common file"
     exit 1
@@ -61,6 +61,8 @@ set_rpc_url() {
         80002) RPC_URL=$RPC_URL_AMOY_POLYGON ;;
         97) RPC_URL=$RPC_URL_BSC_TESTNET ;;
         43113) RPC_URL=$RPC_URL_FUJI_AVALANCHE ;;
+        11145513) RPC_URL=$RPC_URL_BLESSNET_SEPOLIA ;;
+        45513) RPC_URL=$RPC_URL_BLESSNET ;;
         *) echo "Unsupported chain id"; exit 1 ;;
     esac
 
@@ -87,7 +89,7 @@ set_etherscan_api_key() {
       999) echo "Unsupported chain id"; exit 1 ;; #Zora Testnet
       5001) echo "Unsupported chain id"; exit 1 ;; #Mantle Testnet
       59140) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_LINEA ;;
-      80001) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON ;; 
+      80001) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON ;;
       84531) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_BASE ;;
       534353) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_SCROLL ;; # Scroll Alpha
       11155111) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;;
@@ -99,6 +101,8 @@ set_etherscan_api_key() {
       80002) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON ;;
       97) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_BSC ;;
       43113) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;; #Avalanche C-Chain
+      11145513) ETHERSCAN_API_KEY="" ;;
+      45513) ETHERSCAN_API_KEY="" ;;
       *) echo "Unsupported chain id"; exit 1 ;;
   esac
 
@@ -140,7 +144,7 @@ echo "EXPECTED_VALIDATOR_CONFIGURATION_ADDRESS: $EXPECTED_VALIDATOR_CONFIGURATIO
 echo "DEFAULT_OWNER_ADDRESS: $DEFAULT_OWNER_ADDRESS"
 read -p "Do you want to proceed? (yes/no) " yn
 
-case $yn in 
+case $yn in
   yes ) echo ok, we will proceed;;
   no ) echo exiting...;
     exit;;
@@ -154,4 +158,7 @@ forge script script/common/DeployValidatorConfiguration.s.sol:DeployValidatorCon
   --rpc-url $RPC_URL \
   --broadcast \
   --optimizer-runs 777 \
-  --verify $RESUME
+  --verify $RESUME \
+  -g 500 --legacy \
+  --verifier blockscout --verifier-url https://blessnet.calderaexplorer.xyz/api \
+  -vvvv

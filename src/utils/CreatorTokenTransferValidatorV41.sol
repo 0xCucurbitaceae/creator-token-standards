@@ -34,11 +34,11 @@ uint8 constant LIST_TYPE_TARGET_WHITELIST = 3;
  */
 
 contract CreatorTokenTransferValidatorV41 is CreatorTokenTransferValidator {
-    using EnumerableSet for EnumerableSet.AddressSet;
-    uint16 private constant DEFAULT_TOKEN_TYPE = 0;
+//     using EnumerableSet for EnumerableSet.AddressSet;
+//     uint16 private constant DEFAULT_TOKEN_TYPE = 0;
 
-    /// @dev Mapping of list ids to recipient allowlists.
-    mapping(uint120 => List) internal recipientAllowlist;
+//     /// @dev Mapping of list ids to recipient allowlists.
+//     mapping(uint120 => List) internal recipientAllowlists;
 
     constructor(
         address defaultOwner,
@@ -54,123 +54,125 @@ contract CreatorTokenTransferValidatorV41 is CreatorTokenTransferValidator {
         validatorConfiguration
     ) {}
 
-    /**
-     * @notice Adds one or more accounts to a recipientAllowlist.
-     *
-     * @dev Throws when the caller does not own the specified list.
-     * @dev Throws when the accounts array is empty.
-     *
-     * @dev <h4>Postconditions:</h4>
-     *      1. Accounts not previously in the list are added.
-     *      2. An `AddedAccountToList` event is emitted for each account that is newly added to the list.
-     *
-     * @param id       The id of the list.
-     * @param accounts The addresses of the accounts to add.
-     */
-    function addAccountsToRecipientAllowlist(uint120 id, address[] calldata accounts) external {
-        _addAccountsToList(recipientAllowlist[id], LIST_TYPE_TARGET_WHITELIST, id, accounts);
-    }
+//     /**
+//      * @notice Adds one or more accounts to a recipientAllowlist.
+//      *
+//      * @dev Throws when the caller does not own the specified list.
+//      * @dev Throws when the accounts array is empty.
+//      *
+//      * @dev <h4>Postconditions:</h4>
+//      *      1. Accounts not previously in the list are added.
+//      *      2. An `AddedAccountToList` event is emitted for each account that is newly added to the list.
+//      *
+//      * @param id       The id of the list.
+//      * @param accounts The addresses of the accounts to add.
+//      */
+//     function addAccountsToRecipientAllowlist(uint120 id, address[] calldata accounts) external {
+//         _addAccountsToList(recipientAllowlists[id], LIST_TYPE_TARGET_WHITELIST, id, accounts);
+//     }
 
-        /**
-     * @notice Removes one or more accounts from a whitelist.
-     *
-     * @dev Throws when the caller does not own the specified list.
-     * @dev Throws when the accounts array is empty.
-     *
-     * @dev <h4>Postconditions:</h4>
-     *      1. Accounts previously in the list are removed.
-     *      2. A `RemovedAccountFromList` event is emitted for each account that is removed from the list.
-     *
-     * @param id       The id of the list.
-     * @param accounts The addresses of the accounts to remove.
-     */
-    function removeAccountsToRecipientAllowlist(
-        uint120 id,
-        address[] calldata accounts
-    ) external {
-        _removeAccountsFromList(recipientAllowlist[id], LIST_TYPE_TARGET_WHITELIST, id, accounts);
-    }
+//         /**
+//      * @notice Removes one or more accounts from a whitelist.
+//      *
+//      * @dev Throws when the caller does not own the specified list.
+//      * @dev Throws when the accounts array is empty.
+//      *
+//      * @dev <h4>Postconditions:</h4>
+//      *      1. Accounts previously in the list are removed.
+//      *      2. A `RemovedAccountFromList` event is emitted for each account that is removed from the list.
+//      *
+//      * @param id       The id of the list.
+//      * @param accounts The addresses of the accounts to remove.
+//      */
+//     function removeAccountsToRecipientAllowlist(
+//         uint120 id,
+//         address[] calldata accounts
+//     ) external {
+//         _removeAccountsFromList(recipientAllowlists[id], LIST_TYPE_TARGET_WHITELIST, id, accounts);
+//     }
 
-    /**
-     * @notice Get whitelisted accounts by list id.
-     * @param  id The id of the list.
-     * @return An array of whitelisted accounts.
-     */
-    function getRecipientAllowlistedAccounts(uint120 id) public view returns (address[] memory) {
-        return recipientAllowlist[id].enumerableAccounts.values();
-    }
+//     // TODO: understand why this gets too big to deploy on hardhat 🤯
 
-    /**
-     * @notice Check if an account is whitelisted in a specified list.
-     * @param id       The id of the list.
-     * @param account  The address of the account to check.
-     * @return         True if the account is whitelisted in the specified list, false otherwise.
-     */
-    function isAccountRecipientAllowlisted(uint120 id, address account) public view returns (bool) {
-        return recipientAllowlist[id].nonEnumerableAccounts[account];
-    }
+//     // /**
+//     //  * @notice Get whitelisted accounts by list id.
+//     //  * @param  id The id of the list.
+//     //  * @return An array of whitelisted accounts.
+//     //  */
+//     // function getRecipientAllowlistedAccounts(uint120 id) public view returns (address[] memory) {
+//     //     return recipientAllowlist[id].enumerableAccounts.values();
+//     // }
 
-    /*************************************************************************/
-    /*                       OVERRIDDEN VALIDATION LOGIC                     */
-    /*************************************************************************/
-  /**
-     * @notice Apply the collection transfer policy to a transfer operation of a creator token.
-     *
-     * @dev If the caller is self (Permit-C Processor) it means we have already applied operator validation in the
-     *      _beforeTransferFrom callback.  In this case, the security policy was already applied and the operator
-     *      that used the Permit-C processor passed the security policy check and transfer can be safely allowed.
-     *
-     * @dev The order of checking whitelisted accounts, authorized operator check and whitelisted codehashes
-     *      is very deliberate.  The order of operations is determined by the most frequently used settings that are
-     *      expected in the wild.
-     *
-     * @dev Throws when the collection has enabled account freezing mode and either the `from` or `to` addresses
-     *      are on the list of frozen accounts for the collection.
-     * @dev Throws when the collection is set to Level 9 - Soulbound Token.
-     * @dev Throws when the receiver has deployed code and isn't whitelisted, if ReceiverConstraints.NoCode is set
-     *      and the transfer is not approved by an authorizer for the collection.
-     * @dev Throws when the receiver has never verified a signature to prove they are an EOA and the receiver
-     *      isn't whitelisted, if the ReceiverConstraints.EOA is set and the transfer is not approved by an
-     *      authorizer for the collection..
-     * @dev Throws when `msg.sender` is blacklisted, if CallerConstraints.OperatorBlacklistEnableOTC is set, unless
-     *      `msg.sender` is also the `from` address or the transfer is approved by an authorizer for the collection.
-     * @dev Throws when `msg.sender` isn't whitelisted, if CallerConstraints.OperatorWhitelistEnableOTC is set, unless
-     *      `msg.sender` is also the `from` address or the transfer is approved by an authorizer for the collection.
-     * @dev Throws when neither `msg.sender` nor `from` are whitelisted, if
-     *      CallerConstraints.OperatorWhitelistDisableOTC is set and the transfer
-     *      is not approved by an authorizer for the collection.
-     *
-     * @dev <h4>Postconditions:</h4>
-     *      1. Transfer is allowed or denied based on the applied transfer policy.
-     *
-     * @param collection  The collection address of the token being transferred.
-     * @param caller      The address initiating the transfer.
-     * @param from        The address of the token owner.
-     * @param to          The address of the token receiver.
-     * @param tokenId     The token id being transferred.
-     *
-     * @return The selector value for an error if the transfer is not allowed, `SELECTOR_NO_ERROR` if the transfer is allowed.
-     */
-    function _validateTransfer(
-        function(address,address,uint256) internal view returns(bool) _callerAuthorizedParam,
-        address collection,
-        address caller,
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal view override returns (bytes4,uint16) {
+//     // /**
+//     //  * @notice Check if an account is whitelisted in a specified list.
+//     //  * @param id       The id of the list.
+//     //  * @param account  The address of the account to check.
+//     //  * @return         True if the account is whitelisted in the specified list, false otherwise.
+//     //  */
+//     // function isAccountRecipientAllowlisted(uint120 id, address account) public view returns (bool) {
+//     //     return recipientAllowlist[id].nonEnumerableAccounts[account];
+//     // }
+
+//     /*************************************************************************/
+//     /*                       OVERRIDDEN VALIDATION LOGIC                     */
+//     /*************************************************************************/
+//   /**
+//      * @notice Apply the collection transfer policy to a transfer operation of a creator token.
+//      *
+//      * @dev If the caller is self (Permit-C Processor) it means we have already applied operator validation in the
+//      *      _beforeTransferFrom callback.  In this case, the security policy was already applied and the operator
+//      *      that used the Permit-C processor passed the security policy check and transfer can be safely allowed.
+//      *
+//      * @dev The order of checking whitelisted accounts, authorized operator check and whitelisted codehashes
+//      *      is very deliberate.  The order of operations is determined by the most frequently used settings that are
+//      *      expected in the wild.
+//      *
+//      * @dev Throws when the collection has enabled account freezing mode and either the `from` or `to` addresses
+//      *      are on the list of frozen accounts for the collection.
+//      * @dev Throws when the collection is set to Level 9 - Soulbound Token.
+//      * @dev Throws when the receiver has deployed code and isn't whitelisted, if ReceiverConstraints.NoCode is set
+//      *      and the transfer is not approved by an authorizer for the collection.
+//      * @dev Throws when the receiver has never verified a signature to prove they are an EOA and the receiver
+//      *      isn't whitelisted, if the ReceiverConstraints.EOA is set and the transfer is not approved by an
+//      *      authorizer for the collection..
+//      * @dev Throws when `msg.sender` is blacklisted, if CallerConstraints.OperatorBlacklistEnableOTC is set, unless
+//      *      `msg.sender` is also the `from` address or the transfer is approved by an authorizer for the collection.
+//      * @dev Throws when `msg.sender` isn't whitelisted, if CallerConstraints.OperatorWhitelistEnableOTC is set, unless
+//      *      `msg.sender` is also the `from` address or the transfer is approved by an authorizer for the collection.
+//      * @dev Throws when neither `msg.sender` nor `from` are whitelisted, if
+//      *      CallerConstraints.OperatorWhitelistDisableOTC is set and the transfer
+//      *      is not approved by an authorizer for the collection.
+//      *
+//      * @dev <h4>Postconditions:</h4>
+//      *      1. Transfer is allowed or denied based on the applied transfer policy.
+//      *
+//      * @param collection  The collection address of the token being transferred.
+//      * @param caller      The address initiating the transfer.
+//      * @param from        The address of the token owner.
+//      * @param to          The address of the token receiver.
+//      * @param tokenId     The token id being transferred.
+//      *
+//      * @return The selector value for an error if the transfer is not allowed, `SELECTOR_NO_ERROR` if the transfer is allowed.
+//      */
+//     function _validateTransfer(
+//         function(address,address,uint256) internal view returns(bool) _callerAuthorizedParam,
+//         address collection,
+//         address caller,
+//         address from,
+//         address to,
+//         uint256 tokenId
+//     ) internal view override returns (bytes4,uint16) {
 
 
-        CollectionSecurityPolicyV3 storage collectionSecurityPolicy = collectionSecurityPolicies[collection];
-        uint120 listId = collectionSecurityPolicy.listId;
-        List storage recipientAllowlist = recipientAllowlist[listId];
-        // If the 'to' address is on the recipientAllowlist for this collection, bypass validation
-        if (recipientAllowlist.nonEnumerableAccounts[to]) {
-            return (SELECTOR_NO_ERROR, DEFAULT_TOKEN_TYPE);
-        }
+//         CollectionSecurityPolicyV3 storage collectionSecurityPolicy = collectionSecurityPolicies[collection];
+//         uint120 listId = collectionSecurityPolicy.listId;
+//         List storage recipientAllowlist = recipientAllowlists[listId];
+//         // If the 'to' address is on the recipientAllowlist for this collection, bypass validation
+//         if (recipientAllowlist.nonEnumerableAccounts[to]) {
+//             return (SELECTOR_NO_ERROR, DEFAULT_TOKEN_TYPE);
+//         }
 
-        // Otherwise, use the parent contract's validation logic
-        return super._validateTransfer(_callerAuthorizedParam, collection, caller, from, to, tokenId );
-    }
+//         // Otherwise, use the parent contract's validation logic
+//         return super._validateTransfer(_callerAuthorizedParam, collection, caller, from, to, tokenId );
+//     }
 
 }

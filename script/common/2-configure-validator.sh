@@ -2,7 +2,7 @@
 
 if [ -f .env.secrets ]
 then
-  export $(cat .env.secrets | xargs) 
+  export $(cat .env.secrets | xargs)
 else
     echo "Please set your .env.secrets file"
     exit 1
@@ -10,7 +10,7 @@ fi
 
 if [ -f .env.common ]
 then
-  export $(cat .env.common | xargs) 
+  export $(cat .env.common | xargs)
 else
     echo "Please set your .env.common file"
     exit 1
@@ -65,6 +65,8 @@ set_rpc_url() {
         80002) RPC_URL=$RPC_URL_AMOY_POLYGON ;;
         97) RPC_URL=$RPC_URL_BSC_TESTNET ;;
         43113) RPC_URL=$RPC_URL_FUJI_AVALANCHE ;;
+          11145513) RPC_URL=$RPC_URL_BLESSNET_SEPOLIA ;;
+        45513) RPC_URL=$RPC_URL_BLESSNET ;;
         *) echo "Unsupported chain id"; exit 1 ;;
     esac
 
@@ -103,6 +105,8 @@ set_native_value_threshold_for_pause() {
       80002) NATIVE_VALUE_TO_CHECK_PAUSED_STATE=$NATIVE_VALUE_TO_CHECK_PAUSED_STATE_POLYGON_AMOY ;;
       97) NATIVE_VALUE_TO_CHECK_PAUSED_STATE=$NATIVE_VALUE_TO_CHECK_PAUSED_STATE_BSC_TESTNET ;;
       43113) NATIVE_VALUE_TO_CHECK_PAUSED_STATE=$NATIVE_VALUE_TO_CHECK_PAUSED_STATE_AVALANCHE_FUJI ;;
+      11145513) NATIVE_VALUE_TO_CHECK_PAUSED_STATE=0 ;;
+      45513) NATIVE_VALUE_TO_CHECK_PAUSED_STATE=0 ;;
       *) echo "Unsupported chain id"; exit 1 ;;
   esac
 
@@ -142,7 +146,7 @@ echo "EXPECTED_VALIDATOR_CONFIGURATION_ADDRESS: $EXPECTED_VALIDATOR_CONFIGURATIO
 echo "NATIVE_VALUE_TO_CHECK_PAUSED_STATE: $NATIVE_VALUE_TO_CHECK_PAUSED_STATE"
 read -p "Do you want to proceed? (yes/no) " yn
 
-case $yn in 
+case $yn in
   yes ) echo ok, we will proceed;;
   no ) echo exiting...;
     exit;;

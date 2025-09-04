@@ -107,5 +107,8 @@ uint8 constant LIST_TYPE_WHITELIST = 1;
 /// @dev List type is authorizers.
 uint8 constant LIST_TYPE_AUTHORIZERS = 2;
 
+/// @dev List type is authorised recipients.
+uint8 constant LIST_TYPE_RECIPIENTS = 3;
+
 /// @dev Constant value for the no error selector.
 bytes4 constant SELECTOR_NO_ERROR = bytes4(0x00000000);
